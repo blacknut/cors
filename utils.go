@@ -30,7 +30,7 @@ func generatePreflightHeaders(c Config) http.Header {
 		headers.Set("Access-Control-Allow-Credentials", "true")
 	}
 	if len(c.AllowMethods) > 0 {
-		allowMethods := normalize(c.AllowMethods)
+		allowMethods := normalizeWith(c.AllowMethods, strings.ToUpper)
 		value := strings.Join(allowMethods, ",")
 		headers.Set("Access-Control-Allow-Methods", value)
 	}
@@ -52,6 +52,10 @@ func generatePreflightHeaders(c Config) http.Header {
 }
 
 func normalize(values []string) []string {
+	return normalizeWith(values, strings.ToLower)
+}
+
+func normalizeWith(values []string, f func(string) string) []string {
 	if values == nil {
 		return nil
 	}
@@ -59,7 +63,7 @@ func normalize(values []string) []string {
 	normalized := make([]string, 0, len(values))
 	for _, value := range values {
 		value = strings.TrimSpace(value)
-		value = strings.ToLower(value)
+		value = f(value)
 		if _, seen := distinctMap[value]; !seen {
 			normalized = append(normalized, value)
 			distinctMap[value] = true
